@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Anket.Pages.Settings.SettingsPage"
+             Title="Ayarlar">
+   
+    <ScrollView>
+        <VerticalStackLayout Margin="20" Spacing="20">
+
+            <Button Style="{StaticResource BtnStl}" Text="Yetkili Servis Girişi" Clicked="Button_Clicked"/>
+
+            <Label Text="Anket Başlığı" FontSize="Medium" FontAttributes="Bold"/>
+            <Entry x:Name="EntryAnketBaslik" Placeholder="Anket başlığını giriniz"/>
+            
+            <Label Text="Veritabanı Seçimi" FontSize="Medium" FontAttributes="Bold"/>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="RbSqlite" Content="SQLite" IsChecked="True" GroupName="Database"/>
+                <RadioButton x:Name="RbFirebase" Content="Firebase" GroupName="Database"/>
+                <RadioButton x:Name="RbMssql" Content="MSSQL" GroupName="Database"/>
+            </HorizontalStackLayout>
+
+            <Label Text="SQL SERVER AYARLARI" FontSize="Medium" FontAttributes="Bold"/>
+            <Entry x:Name="TxtSqlServer" Placeholder="SQL SERVER"/>
+            <Entry x:Name="TxtSqlUserName" Placeholder="SQL USER NAME"/>
+            <Entry x:Name="TxtSqlPassword" Placeholder="SQL PAROLA"/>
+            <Entry x:Name="TxtSqlDatabase" Placeholder="SQL DATABASE NAME"/>
+
+            <Label Text="Teşekkür Ekranı Süresi (saniye)" FontSize="Medium" FontAttributes="Bold"/>
+            <Entry x:Name="EntryTimerSure" Placeholder="Süreyi giriniz" Keyboard="Numeric" Text="3"/>
+            
+            <Label Text="Yönetici Şifresi" FontSize="Medium" FontAttributes="Bold"/>
+            <Entry x:Name="EntryPassword" Placeholder="Şifre giriniz" IsPassword="True" Text="1234"/>
+
+            <Grid ColumnDefinitions="40,auto">
+                <CheckBox Grid.Column="0" x:Name="ChkRapor"/>
+                <Label Text="Rapor" Grid.Column="1" VerticalOptions="Center"/>
+            </Grid>
+
+            <Label Text="Teşekkür Metni" FontSize="Medium" FontAttributes="Bold"/>
+            <Entry x:Name="EntryTesekkurMetni" Placeholder="Teşekkür metnini giriniz" Text="Katılımınız için teşekkürler!"/>
+            
+            <Button x:Name="BtnKaydet" Text="Kaydet" Clicked="BtnKaydet_Clicked"/>
+            
+            <Button x:Name="BtnRaporlar" Text="Raporlar" Clicked="BtnRaporlar_Clicked"/>
+        </VerticalStackLayout>
+    </ScrollView>
+    
+</ContentPage>

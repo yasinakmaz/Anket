@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Anket.Pages.Anket.AnketPage"
+             Title=""
+             BackgroundColor="#f6f6f6">
+
+    <Grid x:Name="GrdShow">
+        <Grid RowDefinitions=".2*,*" Margin="10">
+            <Grid Grid.Row="0" ColumnDefinitions="*,50">
+                <Label x:Name="TitleLabel" Style="{StaticResource FocusedLblStl}" VerticalOptions="End" HorizontalOptions="Center" Grid.Column="0" TextColor="Black" Text="Ankete Hoş Geldiniz"></Label>
+                <ImageButton x:Name="BtnSettings" Clicked="BtnSettings_Clicked" VerticalOptions="Start" Grid.Column="1" Source="settings.png" BackgroundColor="Transparent"/>
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnDefinitions="*,*,*">
+                <ImageButton x:Name="BtnMutlu" Grid.Column="0" Source="mutlu.png" BackgroundColor="Transparent" Clicked="BtnMutlu_Clicked"></ImageButton>
+                <ImageButton x:Name="BtnNotr" Grid.Column="1" Source="notr.png" BackgroundColor="Transparent" Clicked="BtnNotr_Clicked"></ImageButton>
+                <ImageButton x:Name="BtnSad" Grid.Column="2" Source="sad.png" BackgroundColor="Transparent" Clicked="BtnSad_Clicked"></ImageButton>
+            </Grid>
+        </Grid>
+    </Grid>
+    
+</ContentPage>

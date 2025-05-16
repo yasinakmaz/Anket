@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Anket.Pages.Report.ReportPage"
+             Title="">
+
+    <ScrollView Margin="10">
+        <Grid>
+            <Grid RowDefinitions="60,100,50,70,*" RowSpacing="10">
+                <Border Grid.Row="0" Style="{StaticResource BrdStl}">
+                    <ScrollView>
+                        <Grid>
+                            <Button Style="{StaticResource BtnStl}" Text="Özfiliz Yazılım® Rapor Ex" FontSize="20"></Button>
+                        </Grid>
+                    </ScrollView>
+                </Border>
+
+                <Grid Grid.Row="1" RowDefinitions="20,*" RowSpacing="3">
+                    <Label Style="{StaticResource LblStl}" Text="Tarih Aralığı Belirtebilirsiniz ↓"></Label>
+                    <Border Grid.Row="1" Style="{StaticResource BrdStl}">
+                        <ScrollView Orientation="Horizontal" Margin="5">
+                            <Grid ColumnDefinitions="*,*,*,*,*,*,*,*" ColumnSpacing="5">
+
+                                <Label Grid.Column="0" VerticalOptions="Center" Style="{StaticResource LblStl}" Text="Başlangıç Tarihi →"></Label>
+                                <DatePicker Grid.Column="1" x:Name="StartDatePicker"></DatePicker>
+
+                                <Label Grid.Column="2" VerticalOptions="Center" Style="{StaticResource LblStl}" Text="Başlangıç Saati →"></Label>
+                                <TimePicker Grid.Column="3" x:Name="StartTimePicker"></TimePicker>
+
+                                <Label Grid.Column="4" VerticalOptions="Center" Style="{StaticResource LblStl}" Text="Bitiş Tarihi →"></Label>
+                                <DatePicker Grid.Column="5" x:Name="EndDatePicker"></DatePicker>
+
+                                <Label Grid.Column="6" VerticalOptions="Center" Style="{StaticResource LblStl}" Text="Bitiş Saati →"></Label>
+                                <TimePicker Grid.Column="7" x:Name="EndTimePicker"></TimePicker>
+                            </Grid>
+                        </ScrollView>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="2" ColumnDefinitions="*,*">
+                    <Button Grid.Column="0" x:Name="BtnExcel" Style="{StaticResource BtnStl}" Text="Excel Rapor Al"></Button>
+                    <Button Grid.Column="1" x:Name="BtnTarihUygula" Style="{StaticResource BtnStl}" Text="Tarihi Uygula"></Button>
+                </Grid>
+
+                <Grid Grid.Row="3" RowDefinitions="20,*">
+                    <Label Style="{StaticResource LblStl}" Text="Hızlı Seçim ↓"></Label>
+                    <Border Grid.Row="1" Style="{StaticResource BrdStl}">
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="5">
+                            <Button x:Name="BtnBugun" Grid.Column="0" Style="{StaticResource BtnStl}" Text="Bugün"></Button>
+                            <Button x:Name="BtnHafta" Grid.Column="1" Style="{StaticResource BtnStl}" Text="Bu Hafta"></Button>
+                            <Button x:Name="BtnAy" Grid.Column="2" Style="{StaticResource BtnStl}" Text="Bu Ay"></Button>
+                            <Button x:Name="BtnYil" Grid.Column="3" Style="{StaticResource BtnStl}" Text="Bu Yıl"></Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="4">
+                    <Border>
+                        <Grid RowDefinitions="*,*">
+                            <Grid Grid.Row="0" ColumnDefinitions="*,*" HeightRequest="150">
+                                <Button HeightRequest="150" Grid.Column="0" Style="{StaticResource BtnStl}" x:Name="BtnMutlu" ContentLayout="Left" ImageSource="mutlu.png" Text="0 Mutlu"/>
+                                <Button Grid.Column="1" Style="{StaticResource BtnStl}" x:Name="BtnMutsuz" ContentLayout="Left" ImageSource="sad.png" Text="0 Mutsuz"/>
+                            </Grid>
+                            <Button Grid.Row="1" Style="{StaticResource BtnStl}" HeightRequest="150" x:Name="BtnNotr" ImageSource="notr.png" Text="0 Kararsız"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+            </Grid>
+            
+            <!-- Yükleme göstergesi -->
+            <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False" 
+                              HorizontalOptions="Center" VerticalOptions="Center" 
+                              Color="{StaticResource PressedColor}" Scale="2" />
+            
+            <Border VerticalOptions="End" StrokeShape="RoundRectangle 10" HeightRequest="30" BackgroundColor="{StaticResource PressedColor}">
+                <ScrollView Orientation="Horizontal" Margin="5">
+                    <Label Style="{StaticResource LblStl}" Text="Özfiliz Yazılım Ve Bilişim Teknolojileri® Tüm Hakları Saklıdır - Creator By Yasin Akmaz" FontAttributes="Italic" TextColor="{StaticResource White}" HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                </ScrollView>
+            </Border>
+        </Grid>
+    </ScrollView>
+
+</ContentPage>

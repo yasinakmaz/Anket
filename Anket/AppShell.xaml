@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="Anket.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Anket.Pages.Anket"
+    xmlns:settings="clr-namespace:Anket.Pages.Settings"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="False"
+    Title="Anket">
+
+    <ShellContent
+    Title=""
+    ContentTemplate="{DataTemplate local:AnketPage}"
+    Route="AnketPage" />
+
+    <ShellContent
+    Title="Ayarlar"
+    ContentTemplate="{DataTemplate settings:SettingsPage}"
+    Route="SettingsPage" />
+
+</Shell>

@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Style TargetType="Label" x:Key="FocusedLblStl">
+        <Setter Property="FontFamily" Value="EthosNovaBold"/>
+        <Setter Property="FontAttributes" Value="None"/>
+        <Setter Property="TextType" Value="Text"/>
+        <Setter Property="TextColor" Value="{StaticResource Black}"/>
+        <Setter Property="FontSize" Value="50"/>
+    </Style>
+
+    <Style TargetType="Page" x:Key="PageStl">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource PrimaryDark},Light={StaticResource PrimaryWhite}}"/>
+    </Style>
+
+    <Style TargetType="Button" x:Key="BtnStl">
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontFamily" Value="EthosNovaBold"/>
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource SecondaryDark},Light={StaticResource SecondaryWhite}}"/>
+        <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource White},Light={StaticResource Black}}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+
+    <Style TargetType="Label" x:Key="LblStl">
+        <Setter Property="FontFamily" Value="EthosNovaBold"/>
+        <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource White},Light={StaticResource Black}}"/>
+    </Style>
+
+    <Style TargetType="Border" x:Key="BrdStl">
+        <Setter Property="Stroke" Value="{AppThemeBinding Dark={StaticResource White},Light={StaticResource Black}}"/>
+        <Setter Property="StrokeThickness" Value="1.5"/>
+        <Setter Property="StrokeShape" Value="RoundRectangle 5"/>
+    </Style>
+
+</ResourceDictionary>
