@@ -16,7 +16,35 @@ namespace Anket
         protected async override void OnStart()
         {
             base.OnStart();
-            await SqlServices.LoadDataAsync();
+
+            try
+            {
+                // SQL hizmetleri ve bağlantı ayarlarını yükle
+                await SqlServices.LoadDataAsync();
+
+                // Veritabanı tipini kontrol et
+                string dbType = await SecureStorage.GetAsync("DatabaseType") ?? "SQLite";
+                Debug.WriteLine($"Uygulama başlangıcı: Veritabanı tipi = {dbType}");
+
+                // SQLite veritabanı otomatik olarak AnketDbContext constructor'ında oluşturuluyor
+                // SQL Server bağlantı kontrolü
+                if (dbType == "MSSQL")
+                {
+                    try
+                    {
+                        // SQL Server testi yapılabilir
+                        Debug.WriteLine("MSSQL seçildi, SQL Server yapılandırması kullanılacak");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"SQL Server testi hatası: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Uygulama başlangıcında hata: {ex.Message}");
+            }
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
@@ -26,6 +54,7 @@ namespace Anket
             if (window != null)
             {
                 window.Created += (s, e) => {
+                    // Pencere oluşturulduğunda yapılacak işlemler
                 };
             }
 

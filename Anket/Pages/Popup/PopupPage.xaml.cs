@@ -4,7 +4,7 @@ public partial class PopupPage : ContentPage
 {
     private int _remainingTime;
     private readonly string _voteResult;
-    private static readonly Lazy<IConnectivityService> _connectivityService = 
+    private static readonly Lazy<IConnectivityService> _connectivityService =
         new Lazy<IConnectivityService>(() => new ConnectivityService());
 
     public PopupPage(string voteResult)
@@ -24,57 +24,76 @@ public partial class PopupPage : ContentPage
             string tesekkurMetni = await SecureStorage.GetAsync("TesekkurMetni") ?? "Katılımınız için teşekkürler!";
             string dbtype = await SecureStorage.GetAsync("DatabaseType") ?? "SQLite";
             LblTesekkur.Text = tesekkurMetni;
-            
-            if(dbtype == "SQLite" && dbtype == "Firebase")
+
+            Debug.WriteLine($"PopupPage: Seçilen veritabanı tipi: {dbtype}");
+
+            // DÜZELTME: VEYA (||) operatörünü kullanın
+            if (dbtype == "SQLite" || dbtype == "Firebase")
             {
-                // Oy bilgisini seçilen veritabanına kaydet
-                var dbService = await DatabaseServiceFactory.GetDatabaseServiceAsync();
-                if (dbService != null)
+                try
                 {
-                    await dbService.SaveVoteAsync(_voteResult);
-                }
+                    // Oy bilgisini veritabanına kaydet
+                    var dbService = await DatabaseServiceFactory.GetDatabaseServiceAsync();
+                    if (dbService != null)
+                    {
+                        await dbService.SaveVoteAsync(_voteResult);
+                        Debug.WriteLine($"Oy kaydedildi: {_voteResult}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Veritabanı servisi oluşturulamadı!");
+                    }
 
-                // İnternet bağlantısı değişikliğini dinle
-                bool isNotConnected = !_connectivityService.Value.IsConnected;
-                if (isNotConnected)
+                    // İnternet bağlantısı kontrolü
+                    if (!_connectivityService.Value.IsConnected)
+                    {
+                        _connectivityService.Value.ConnectivityChanged += ConnectivityChanged_Handler;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    _connectivityService.Value.ConnectivityChanged += ConnectivityChanged_Handler;
+                    Debug.WriteLine($"Oy kaydetme hatası: {ex.Message}");
+                    // Kullanıcıya hata gösterme
                 }
-
-                // Timer süresini ayarlardan al
-                string timerDurationStr = await SecureStorage.GetAsync("TimerDuration") ?? "3";
-                if (!int.TryParse(timerDurationStr, out int timerDuration) || timerDuration < 1)
-                {
-                    timerDuration = 1; // Geçersiz değer veya 0 değeri için varsayılan 1 saniye
-                }
-
-                _remainingTime = timerDuration;
-                StartCountdown();
             }
-            else 
+            else if (dbtype == "MSSQL")
             {
-                var dbservice = await DatabaseServiceFactory.GetDatabaseServiceAsync();
-                if (dbservice != null)
+                try
                 {
-                    await dbservice.SaveVoteSqlServer(_voteResult);
+                    var dbservice = await DatabaseServiceFactory.GetDatabaseServiceAsync();
+                    if (dbservice != null)
+                    {
+                        await dbservice.SaveVoteSqlServer(_voteResult);
+                        Debug.WriteLine($"SQL Server'a oy kaydedildi: {_voteResult}");
+                    }
                 }
-                // Timer süresini ayarlardan al
-                string timerDurationStr = await SecureStorage.GetAsync("TimerDuration") ?? "3";
-                if (!int.TryParse(timerDurationStr, out int timerDuration) || timerDuration < 1)
+                catch (Exception ex)
                 {
-                    timerDuration = 1; // Geçersiz değer veya 0 değeri için varsayılan 1 saniye
+                    Debug.WriteLine($"SQL Server oy kaydetme hatası: {ex.Message}");
                 }
-
-                _remainingTime = timerDuration;
-                StartCountdown();
             }
+            else
+            {
+                Debug.WriteLine($"Tanımlanamayan veritabanı tipi: {dbtype}");
+            }
+
+            // Timer süresini ayarla ve başlat
+            string timerDurationStr = await SecureStorage.GetAsync("TimerDuration") ?? "3";
+            if (!int.TryParse(timerDurationStr, out int timerDuration) || timerDuration < 1)
+            {
+                timerDuration = 3; // Varsayılan
+            }
+
+            _remainingTime = timerDuration;
+            StartCountdown();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"PopupPage yüklenirken hata oluştu: {ex.Message}");
+            Debug.WriteLine($"PopupPage yüklenirken hata: {ex.Message}");
+            // Sayfa işleme hatası
         }
     }
-    
+
     private async void ConnectivityChanged_Handler(object sender, AnketConnectivityEventArgs e)
     {
         if (e.IsConnected)
@@ -82,11 +101,13 @@ public partial class PopupPage : ContentPage
             // İnternet bağlantısı tekrar sağlandığında, offline kayıtları senkronize et
             try
             {
+                Debug.WriteLine("Internet bağlantısı tespit edildi, senkronizasyon başlatılıyor...");
                 var dbService = await DatabaseServiceFactory.GetDatabaseServiceAsync();
                 if (dbService != null)
                 {
                     await dbService.SyncOfflineDataAsync();
-                    
+                    Debug.WriteLine("Senkronizasyon tamamlandı");
+
                     _connectivityService.Value.ConnectivityChanged -= ConnectivityChanged_Handler;
                 }
             }
@@ -96,7 +117,7 @@ public partial class PopupPage : ContentPage
             }
         }
     }
-    
+
     private async void StartCountdown()
     {
         while (_remainingTime > 0)
@@ -105,18 +126,19 @@ public partial class PopupPage : ContentPage
             await Task.Delay(1000);
             _remainingTime--;
         }
-        
+
         await Navigation.PopAsync();
     }
-    
+
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        
+
         // Sayfa kapanırken event handler'ı temizle
         if (_connectivityService.IsValueCreated)
         {
             _connectivityService.Value.ConnectivityChanged -= ConnectivityChanged_Handler;
+            Debug.WriteLine("Bağlantı değişikliği dinleyicisi kaldırıldı");
         }
     }
 }

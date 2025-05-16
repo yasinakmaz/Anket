@@ -37,22 +37,17 @@ public static class MauiProgram
 
     private static void RegisterServices(IServiceCollection services)
     {
+        // DbContext singleton olarak kaydet (tek instance)
+        services.AddSingleton<AnketDbContext>();
+
+        // Diğer servisler
         services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<SyncBackgroundService>();
-
-        // DbContext servisleri
-        services.AddDbContext<AnketDbContext>(options => {
-            options.EnableDetailedErrors(true);
-            options.EnableSensitiveDataLogging(false);
-        });
-
-        services.AddTransient<SqliteDatabaseService>();
-        services.AddTransient<FirebaseDatabaseService>();
-
-        // FileSaver servisini ekle
+        services.AddSingleton<SqliteDatabaseService>();
+        services.AddSingleton<FirebaseDatabaseService>();
         services.AddSingleton<IFileSaver, FileSaverService>();
 
-        // Sayfa kayıtları
+        // Sayfalar
         services.AddTransient<PopupPage>();
         services.AddTransient<AnketPage>();
         services.AddTransient<SettingsPage>();

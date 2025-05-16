@@ -15,17 +15,13 @@ namespace Anket.Services
 
     public class SqliteDatabaseService : IDatabaseService
     {
+        private readonly AnketDbContext _dbContext;
         private readonly IConnectivityService _connectivityService;
 
-        public SqliteDatabaseService(IConnectivityService connectivityService)
+        public SqliteDatabaseService(AnketDbContext dbContext, IConnectivityService connectivityService)
         {
-            _connectivityService = connectivityService;
-            
-            // Veritabanını oluştur
-            using (var db = new AnketDbContext())
-            {
-                db.Database.EnsureCreated();
-            }
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _connectivityService = connectivityService ?? throw new ArgumentNullException(nameof(connectivityService));
         }
 
         public async Task SaveVoteAsync(string vote)
@@ -40,140 +36,37 @@ namespace Anket.Services
                     _ => 1002 // Varsayılan
                 };
 
-                // Cihaz ID
                 string deviceId = await GetDeviceIdAsync();
-
-                // Şu anki zaman
                 DateTime now = DateTime.Now;
-
-                // OzelDurum = 0, SQLite seçildiğinde Firebase'e gönderme işlemi olmayacak
                 int ozelDurum = 0;
 
-                // SQLite'a kaydet (EF Core ile)
-                using (var db = new AnketDbContext())
-                {
-                    var anketRecord = new AnketRecord(anketId, now, ozelDurum, deviceId);
-                    db.AnketRecords.Add(anketRecord);
-                    await db.SaveChangesAsync();
-                }
+                var anketRecord = new AnketRecord(anketId, now, ozelDurum, deviceId);
 
-                // Debug.WriteLine($"SQLite (EF Core): Oy kaydedildi: {vote}, OzelDurum: {ozelDurum}");
+                // DbContext'e ekle ve kaydet
+                _dbContext.AnketRecords.Add(anketRecord);
+                await _dbContext.SaveChangesAsync();
+
+                Debug.WriteLine($"Oy kaydedildi: {vote}, Zaman: {now}");
             }
             catch (Exception ex)
             {
-                // Debug.WriteLine($"SQLite kayıt hatası: {ex.Message}");
-            }
-        }
-        public async Task SaveVoteSqlServer(string vote)
-        {
-            try
-            {
-                int anketId = vote switch
-                {
-                    "Mutlu" => 1001,
-                    "Nötr" => 1002,
-                    "Üzgün" => 1003,
-                    _ => 1002
-                };
-
-                string deviceId = await GetDeviceIdAsync();
-
-                DateTime now = DateTime.Now;
-
-                int ozelDurum = 0;
-
-                using (var _context = new AnketSqlContext(SqlServices.ConnectionString))
-                {
-                    var anket = new AnketRecord(anketId, now, ozelDurum, deviceId);
-                    await _context.TBLANKET.AddAsync(anket);
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Sistem", $"Hata : {ex.Message}", "Tamam");
+                Debug.WriteLine($"SQLite kayıt hatası: {ex.Message}");
+                throw; // Hata işleme için hatayı yeniden fırlat
             }
         }
 
-        public async Task SyncOfflineDataAsync()
-        {
-            try
-            {
-                if (!_connectivityService.IsConnected)
-                {
-                    return; // İnternet bağlantısı yoksa senkronizasyon yapma
-                }
-
-                // EF Core ile offline kayıtları al
-                using (var db = new AnketDbContext())
-                {
-                    // OzelDurum = 1 olan tüm offline kayıtları al
-                    var offlineRecords = await db.AnketRecords
-                        .Where(x => x.OzelDurum == 1)
-                        .ToListAsync();
-
-                    if (offlineRecords.Count == 0)
-                    {
-                        return; // Senkronize edilecek kayıt yoksa çık
-                    }
-
-                    var firebaseService = new FirebaseDatabaseService();
-
-                    foreach (var record in offlineRecords)
-                    {
-                        try
-                        {
-                            string vote = record.AnketID switch
-                            {
-                                1001 => "Mutlu",
-                                1002 => "Nötr",
-                                1003 => "Üzgün",
-                                _ => "Nötr"
-                            };
-
-                            // Firebase'e yükle (orijinal tarihle)
-                            await firebaseService.SaveVoteAsync(vote, record.Date);
-
-                            // Kaydı OzelDurum = 0 olarak güncelle (senkronize edilmiş)
-                            // "with" ifadesi kullanarak yeni bir nesne oluştur
-                            var updatedRecord = new AnketRecord(
-                                record.AnketID,
-                                record.Date,
-                                0, // OzelDurum = 0 (senkronize edilmiş)
-                                record.DeviceID,
-                                true // IsProcessed = true
-                            );
-
-                            // Varolan kaydı sil ve yenisini ekle (EF Core'da record ile update yapmak için)
-                            db.AnketRecords.Remove(record);
-                            db.AnketRecords.Add(updatedRecord);
-                            await db.SaveChangesAsync();
-
-                            // Debug.WriteLine($"Offline kayıt senkronize edildi: {record.Date}");
-                        }
-                        catch (Exception ex)
-                        {
-                            // Debug.WriteLine($"Kayıt senkronizasyon hatası: {ex.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Debug.WriteLine($"Senkronizasyon hatası: {ex.Message}");
-            }
-        }
+        // Diğer metodlar...
 
         private async Task<string> GetDeviceIdAsync()
         {
             string deviceId = await SecureStorage.GetAsync("DeviceID");
-            
+
             if (string.IsNullOrEmpty(deviceId))
             {
                 deviceId = Guid.NewGuid().ToString();
                 await SecureStorage.SetAsync("DeviceID", deviceId);
             }
-            
+
             return deviceId;
         }
     }
@@ -582,28 +475,61 @@ namespace Anket.Services
         }
     }
 
-    public class DatabaseServiceFactory
+    public static class DatabaseServiceFactory
     {
-        private static readonly Lazy<IConnectivityService> _connectivityService = 
-            new Lazy<IConnectivityService>(() => new ConnectivityService());
-
         public static async Task<IDatabaseService> GetDatabaseServiceAsync()
         {
-            var connectivityService = _connectivityService.Value;
-            string dbType = await SecureStorage.GetAsync("DatabaseType") ?? "SQLite";
-
-            // Firebase seçilmiş ama internet yoksa SQLite'a yönlendir
-            if (dbType == "Firebase" && !connectivityService.IsConnected)
+            try
             {
-                // Debug.WriteLine("Firebase seçildi fakat internet bağlantısı yok. SQLite kullanılıyor...");
-                return new SqliteDatabaseService(connectivityService);
+                // Servis Container'dan servisleri al
+                var services = IPlatformApplication.Current.Services;
+                var connectivityService = services.GetService<IConnectivityService>();
+
+                if (connectivityService == null)
+                {
+                    connectivityService = new ConnectivityService();
+                }
+
+                // Veritabanı tipini kontrol et
+                string dbType = await SecureStorage.GetAsync("DatabaseType") ?? "SQLite";
+
+                // Firebase seçilmiş ama internet yoksa SQLite'a yönlendir
+                if (dbType == "Firebase" && !connectivityService.IsConnected)
+                {
+                    Debug.WriteLine("Firebase seçildi ancak internet yok, SQLite kullanılıyor");
+                    return services.GetService<SqliteDatabaseService>() ?? new SqliteDatabaseService(
+                        services.GetService<AnketDbContext>() ?? new AnketDbContext(),
+                        connectivityService);
+                }
+
+                switch (dbType)
+                {
+                    case "Firebase":
+                        return services.GetService<FirebaseDatabaseService>() ?? new FirebaseDatabaseService();
+
+                    case "MSSQL":
+                        // SQL Server veritabanı servisi
+                        // Bu kısmı MSSQL implementasyonunuza göre özelleştirin
+                        return new SqliteDatabaseService(
+                            services.GetService<AnketDbContext>() ?? new AnketDbContext(),
+                            connectivityService);
+
+                    default:
+                        // Varsayılan SQLite
+                        return services.GetService<SqliteDatabaseService>() ?? new SqliteDatabaseService(
+                            services.GetService<AnketDbContext>() ?? new AnketDbContext(),
+                            connectivityService);
+                }
             }
-
-            return dbType switch
+            catch (Exception ex)
             {
-                "Firebase" => new FirebaseDatabaseService(),
-                _ => new SqliteDatabaseService(connectivityService) // Varsayılan olarak SQLite
-            };
+                Debug.WriteLine($"Veritabanı servisi oluşturma hatası: {ex.Message}");
+
+                // Hata durumunda varsayılan SQLite servisini kullan
+                var context = new AnketDbContext();
+                var connectivity = new ConnectivityService();
+                return new SqliteDatabaseService(context, connectivity);
+            }
         }
     }
 } 

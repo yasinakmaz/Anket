@@ -4,15 +4,16 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
+  IgnorableNamespaces="uap rescap uap4">
 
-  <Identity Name="maui-package-name-placeholder" Publisher="CN=User Name" Version="0.0.0.0" />
+  <Identity Name="maui-package-name-placeholder" Publisher="CN=TRADEVISION" Version="0.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="18E0DAF1-C40E-4FBD-9A56-B410A606154E" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>$placeholder$</DisplayName>
-    <PublisherDisplayName>User Name</PublisherDisplayName>
+    <PublisherDisplayName>TRADE VISION</PublisherDisplayName>
     <Logo>$placeholder$.png</Logo>
   </Properties>
 
@@ -41,6 +42,8 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+    <uap4:Capability Name="userDataTasks"/>
+    <Capability Name="internetClient"/>
   </Capabilities>
 
 </Package>

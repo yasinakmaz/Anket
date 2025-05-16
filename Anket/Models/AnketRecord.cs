@@ -1,26 +1,26 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Anket.Models;
-public record AnketRecord
+public class AnketRecord
 {
     [Key]
-    [Column("AnketID")]
-    public int AnketID { get; init; } 
-    
-    [Column("Date")]
-    public DateTime Date { get; init; }
-    
-    [Column("OzelDurum")]
-    public int OzelDurum { get; init; }
-    
-    [Column("DeviceID")]
-    public string DeviceID { get; init; } = string.Empty; 
-    
-    [Column("IsProcessed")]
-    public bool IsProcessed { get; init; } = false; 
-    
+    public int Id { get; set; } // Auto-increment birincil anahtar
+
+    [Required]
+    public int AnketID { get; set; }
+
+    [Required]
+    public DateTime Date { get; set; }
+
+    public int OzelDurum { get; set; }
+
+    [Required]
+    public string DeviceID { get; set; } = string.Empty;
+
+    public bool IsProcessed { get; set; } = false;
+
     public AnketRecord() { }
-    
+
     public AnketRecord(int anketID, DateTime date, int ozelDurum, string deviceID, bool isProcessed = false)
     {
         AnketID = anketID;
@@ -33,9 +33,9 @@ public record AnketRecord
 
 public record FirebaseAnketModel
 {
-    public string MemnunInd { get; init; } = "0"; 
-    public string CreateDate { get; init; }
-    public string DeviceID { get; init; } = "";
+    public string MemnunInd { get; init; } = "0";
+    public string CreateDate { get; init; } = string.Empty;
+    public string DeviceID { get; init; } = string.Empty;
     public bool IsProcessed { get; init; } = false;
 
     public static FirebaseAnketModel FromAnketRecord(AnketRecord record)
@@ -56,4 +56,4 @@ public record FirebaseAnketModel
             IsProcessed = record.IsProcessed
         };
     }
-} 
+}

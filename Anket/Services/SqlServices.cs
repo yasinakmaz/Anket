@@ -1,71 +1,48 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using System.Diagnostics;
 using Microsoft.Maui.Storage;
-using System.Threading.Tasks;
 
 namespace Anket.Services
 {
     public static class SqlServices
     {
-        public static string? _sqlserver;
-        public static string? _sqlusername;
-        public static string? _sqlpassword;
-        public static string? _sqldatabasename;
-        public static string? _connectionString;
+        // Sabit bağlantı bilgileri - basitlik için
+        public static readonly string DefaultServer = ".";
+        public static readonly string DefaultUsername = "sa";
+        public static readonly string DefaultPassword = "123456a.A";
+        public static readonly string DefaultDatabase = "ANKET";
+
+        // Ayarlardan yüklenen değerler
+        public static string _sqlserver = DefaultServer;
+        public static string _sqlusername = DefaultUsername;
+        public static string _sqlpassword = DefaultPassword;
+        public static string _sqldatabasename = DefaultDatabase;
+
+        // Bağlantı dizesi
+        public static string ConnectionString =>
+            $"Data Source={_sqlserver};Initial Catalog={_sqldatabasename};Persist Security Info=True;" +
+            $"User ID={_sqlusername};Password={_sqlpassword};TrustServerCertificate=True;" +
+            $"Connection Timeout=30;Max Pool Size=200;Application Name=AnketApp";
 
         public static async Task LoadDataAsync()
         {
             try
             {
-                _sqlserver = await SecureStorage.GetAsync("SQLSERVER") ?? ".";
-                _sqlusername = await SecureStorage.GetAsync("SQLUSERNAME") ?? "sa";
-                _sqlpassword = await SecureStorage.GetAsync("SQLPASSWORD") ?? "123456a.A";
-                _sqldatabasename = await SecureStorage.GetAsync("SQLDATABASENAME") ?? "ANKET";
+                _sqlserver = await SecureStorage.GetAsync("SQLSERVER") ?? DefaultServer;
+                _sqlusername = await SecureStorage.GetAsync("SQLUSERNAME") ?? DefaultUsername;
+                _sqlpassword = await SecureStorage.GetAsync("SQLPASSWORD") ?? DefaultPassword;
+                _sqldatabasename = await SecureStorage.GetAsync("SQLDATABASENAME") ?? DefaultDatabase;
 
-                // Güvenli bağlantı parametreleri eklenmiş connection string
-                _connectionString = $"Data Source={_sqlserver};Initial Catalog={_sqldatabasename};Persist Security Info=True;User ID={_sqlusername};Password={_sqlpassword};Trust Server Certificate=True;Connection Timeout=30;Max Pool Size=200;Application Name=AnketApp";
+                Debug.WriteLine($"SQL Ayarları yüklendi: Server={_sqlserver}, Database={_sqldatabasename}");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"SQL Ayarları yüklenirken hata: {ex.Message}");
                 // Varsayılan değerleri kullan
-                _sqlserver = ".";
-                _sqlusername = "sa";
-                _sqlpassword = "123456a.A";
-                _sqldatabasename = "ANKET";
-                _connectionString = $"Data Source={_sqlserver};Initial Catalog={_sqldatabasename};Persist Security Info=True;User ID={_sqlusername};Password={_sqlpassword};Trust Server Certificate=True;Connection Timeout=30;Max Pool Size=200;Application Name=AnketApp";
-            }
-        }
-
-        public static string ConnectionString
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_connectionString))
-                {
-                    // Bağlantı string henüz oluşturulmadıysa
-                    _connectionString = $"Data Source={_sqlserver ?? "."};Initial Catalog={_sqldatabasename ?? "ANKET"};Persist Security Info=True;User ID={_sqlusername ?? "sa"};Password={_sqlpassword ?? "123456a.A"};Trust Server Certificate=True;Connection Timeout=30;Max Pool Size=200;Application Name=AnketApp";
-                }
-                return _connectionString;
-            }
-        }
-
-        // Özel bağlantı sorunları için test metodu
-        public static async Task<bool> TestConnectionAsync()
-        {
-            try
-            {
-                using (var context = new AnketSqlContext(ConnectionString))
-                {
-                    // Basit bir sorgu ile bağlantıyı test et
-                    return await context.Database.CanConnectAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SQL bağlantı testi başarısız: {ex.Message}");
-                return false;
+                _sqlserver = DefaultServer;
+                _sqlusername = DefaultUsername;
+                _sqlpassword = DefaultPassword;
+                _sqldatabasename = DefaultDatabase;
             }
         }
     }

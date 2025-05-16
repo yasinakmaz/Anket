@@ -47,41 +47,46 @@ namespace Anket.Services
         /// </summary>
         public async Task<ReportResults> GetReportDataAsync(DateTime startDate, DateTime endDate)
         {
+            public async Task<ReportResults> GetReportDataAsync(DateTime startDate, DateTime endDate)
+        {
             var results = new ReportResults();
-            
+
             try
             {
                 string answer = await SecureStorage.GetAsync("DatabaseType") ?? "SQLite";
-                // SQLite'dan verileri çek
-                if(answer == "SQLite" && answer == "Firebase")
+                Debug.WriteLine($"Rapor için veritabanı tipi: {answer}");
+
+                // DÜZELTME: VEYA (||) operatörünü kullanın
+                if (answer == "SQLite" || answer == "Firebase")
                 {
                     var sqliteData = await GetSqliteDataAsync(startDate, endDate);
+                    results.SqliteRecords = sqliteData;
 
-                    // Eğer internet bağlantısı varsa Firebase'den de verileri çek
-                    if (_connectivityService.IsConnected)
+                    if (_connectivityService.IsConnected && answer == "Firebase")
                     {
                         var firebaseData = await GetFirebaseDataAsync(startDate, endDate);
                         results.FirebaseRecords = firebaseData;
                     }
-
-                    results.SqliteRecords = sqliteData;
-                    results.CalculateCounts();
-
-                    return results;
                 }
-                else
+                else if (answer == "MSSQL")
                 {
                     var mssqldata = await GetSqlDataAsync(startDate, endDate);
                     results.SqliteRecords = mssqldata;
-                    results.CalculateCounts();
-                    return results;
                 }
+                else
+                {
+                    Debug.WriteLine($"Bilinmeyen veritabanı tipi: {answer}");
+                }
+
+                results.CalculateCounts();
+                return results;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Rapor verileri getirilirken hata: {ex.Message}");
                 throw;
             }
+        }
         }
         
         /// <summary>
